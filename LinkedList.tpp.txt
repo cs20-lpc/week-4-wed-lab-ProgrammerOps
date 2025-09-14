@@ -1,0 +1,195 @@
+template <typename T>
+LinkedList<T>::LinkedList()
+: head(nullptr) { }
+
+template <typename T>
+LinkedList<T>::LinkedList(const LinkedList<T>& copyObj) {
+    copy(copyObj);
+}
+
+template <typename T>
+LinkedList<T>& LinkedList<T>::operator=(const LinkedList<T>& rightObj) {
+    if (this != &rightObj) {
+        clear();
+        copy(rightObj);
+    }
+    return *this;
+}
+
+template <typename T>
+LinkedList<T>::~LinkedList() {
+    clear();
+}
+
+template <typename T>
+void LinkedList<T>::append(const T& elem) {
+    Node* n = new Node(elem);
+
+    if (head == nullptr) {
+        head = n;
+    }
+    else {
+        Node* curr = head;
+
+        while (curr->next != nullptr) {
+            curr = curr->next;
+        }
+
+        curr->next = n;
+    }
+
+    this->length++;
+}
+
+template <typename T>
+void LinkedList<T>::clear() {
+    Node* prev = nullptr;
+
+    while (head != nullptr) {
+        prev = head;
+        head = head->next;
+        delete prev;
+    }
+
+    this->length = 0;
+}
+
+template <typename T>
+void LinkedList<T>::copy(const LinkedList<T>& copyObj) {
+    // TODO
+    if (copyObj.head == nullptr) {          // If the other list is empty...
+        head = nullptr;                     // ...then we are empty too.
+        this->length = 0;                   // And our length is 0.
+        return; 
+    }
+        
+    
+    head = new Node(copyObj.head->value);   // Create our first node with the same value as copyObj’s first node.
+    this->length = 1;                       // We now have exactly one node.
+
+    Node* tail = head;                      // tail will point to the last node i've built in "this".
+    Node* scan = copyObj.head->next;        // scan walks through the rest of copyObj (starting from 2nd node).
+
+    while (scan != nullptr) {               
+        tail->next = new Node(scan->value); 
+        tail = tail->next;                  
+        scan = scan->next;                  
+        this->length++;                 
+    }   
+
+
+}
+
+template <typename T>
+T LinkedList<T>::getElement(int position) const {
+    if (position < 0 || position >= this->length) {
+        throw string("getElement: error, position out of bounds");
+    }
+    
+    Node* curr = head;
+
+    for (int i = 0; i < position; i++) {
+        curr = curr->next;
+    }
+
+    return curr->value;
+}
+
+template <typename T>
+int LinkedList<T>::getLength() const {
+    return this->length;
+}
+
+template <typename T>
+void LinkedList<T>::insert(int position, const T& elem) {
+    // TODO
+    if (position < 0 || position > this->length) {       // If position is not in [0, length]...
+        throw string("insert: error, position out of bounds"); // ...throw the style-consistent error.
+    }
+
+    if (position == 0) {                                 // Inserting at the very front?
+        Node* n = new Node(elem);                        // Make the new first node.
+        n->next = head;                                  // New node points to old first node.
+        head = n;                                        // Head becomes the new node.
+        this->length++;                                  // List got longer.
+        return;                                          // Done.
+}
+
+    // Otherwise, walk to the node just BEFORE 'position'
+    Node* curr = head;                                   // Start at the first car.
+    for (int i = 0; i < position - 1; i++) {             // Move (position-1) steps forward...
+        curr = curr->next;                               // ...so curr lands on the left neighbor.
+    }
+
+    Node* n = new Node(elem);                            // Create the new middle node.
+    n->next = curr->next;                                // New node should point to what used to be at 'position'.
+    curr->next = n;                                      // Left neighbor now points to the new node.
+    this->length++;                                      // One more node in the list.
+}
+
+template <typename T>
+bool LinkedList<T>::isEmpty() const {
+    return this->length == 0;
+}
+
+template <typename T>
+void LinkedList<T>::remove(int position) {
+    // TODO
+    if (position < 0 || position >= this->length) {      // If outside legal range...
+        throw string("remove: error, position out of bounds"); // ...throw your standard message.
+    }
+
+    if (position == 0) {                                 // Removing the first node?
+        Node* bye = head;                                // Remember the first node.
+        head = head->next;                               // Head jumps to the second node (if any).
+        delete bye;                                      // Delete the old first node.
+        this->length--;                                  // One fewer node now.
+        return; 
+    }
+     // Remove from middle/end:
+    // walk to the node just BEFORE the one we’re deleting
+    Node* prev = head;
+    for (int i = 0; i < position - 1; ++i) {
+        prev = prev->next;
+    }
+
+    Node* bye = prev->next;        // the node to delete
+    prev->next = bye->next;        // unlink it
+    delete bye;                    // and free it
+    --this->length;
+}
+
+template <typename T>
+void LinkedList<T>::replace(int position, const T& elem) {
+    if (position < 0 || position >= this->length) {
+        throw string("replace: error, position out of bounds");
+    }
+
+    Node* curr = head;
+
+    for (int i = 0; i < position; i++) {
+        curr = curr->next;
+    }
+
+    curr->value = elem;
+}
+
+template <typename T>
+ostream& operator<<(ostream& outStream, const LinkedList<T>& myObj) {
+    if (myObj.isEmpty()) {
+        outStream << "List is empty, no elements to display.\n";
+    }
+    else {
+        typename LinkedList<T>::Node* curr = myObj.head;
+        while (curr != nullptr) {
+            outStream << curr->value;
+            if (curr->next != nullptr) {
+                outStream << " --> ";
+            }
+            curr = curr->next;
+        }
+        outStream << endl;
+    }
+
+    return outStream;
+}
